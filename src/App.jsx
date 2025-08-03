@@ -784,7 +784,12 @@ ${exactValue ? `Exact: ${exactValue.toFixed(6)}` : ''}`;
               <input
                 type="number"
                 value={lowerLimit}
-                onChange={(e) => setLowerLimit(Number(e.target.value))}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  if (value < upperLimit) {
+                    setLowerLimit(value);
+                  }
+                }}
                 className="w-full p-3 border border-white/30 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-white/70 backdrop-blur-sm transition-all duration-200 hover:bg-white/90 hover:shadow-lg"
               />
             </div>
@@ -793,11 +798,22 @@ ${exactValue ? `Exact: ${exactValue.toFixed(6)}` : ''}`;
               <input
                 type="number"
                 value={upperLimit}
-                onChange={(e) => setUpperLimit(Number(e.target.value))}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  if (value > lowerLimit) {
+                    setUpperLimit(value);
+                  }
+                }}
                 className="w-full p-3 border border-white/30 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-white/70 backdrop-blur-sm transition-all duration-200 hover:bg-white/90 hover:shadow-lg"
               />
             </div>
           </div>
+          {/* Show validation error */}
+          {lowerLimit >= upperLimit && (
+            <div className="col-span-2 mt-2 text-red-600 text-sm font-semibold">
+              Lower limit must be less than upper limit.
+            </div>
+          )}
 
           {/* Number of Intervals */}
           <div>
