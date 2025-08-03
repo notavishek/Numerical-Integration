@@ -311,6 +311,11 @@ export default function NumericalIntegrationCalculator() {
   const [visualizationMode, setVisualizationMode] = useState('function');
   const [tutorialSection, setTutorialSection] = useState('introduction');
 
+  // Add these state variables at the beginning of your component
+  const [rawFunction, setRawFunction] = useState('');
+  const [processedFunction, setProcessedFunction] = useState(null);
+  const [functionError, setFunctionError] = useState('');
+
   // Get current function
   const currentFunc = useMemo(() => {
     if (customFunction) {
@@ -768,43 +773,31 @@ ${exactValue ? `Exact: ${exactValue.toFixed(6)}` : ''}`;
           {/* Custom Function */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Custom Function (optional)</label>
-            <input
-              type="text"
-              value={customFunction}
-              onChange={(e) => setCustomFunction(e.target.value)}
-              placeholder="e.g., x*x + 2*x + 1"
-              className="w-full p-3 border border-white/30 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/70 backdrop-blur-sm transition-all duration-200 hover:bg-white/90 hover:shadow-lg"
-            />
-            {/* Custom function validation with popup */}
-            {customFunction && (() => {
-              let isValid = true;
-              let errorMsg = '';
-              try {
-                // Only allow x, numbers, math operators, Math. functions
-                // Disallow any other variable or keyword
-                const allowedPattern = /^[x0-9\s\+\-\*\/\^\.\(\)]+$|Math\.[a-zA-Z]+/;
-                if (!allowedPattern.test(customFunction)) {
-                  throw new Error('Only x, numbers, operators, and Math.* functions are allowed.');
-                }
-                // eslint-disable-next-line no-new-func
-                const testFunc = new Function('x', `return ${customFunction}`);
-                const testVal = testFunc(1);
-                if (!isFinite(testVal)) throw new Error('Result is not finite');
-              } catch (e) {
-                isValid = false;
-                errorMsg = e.message || 'Invalid function syntax.';
-              }
-              if (!isValid) {
-                return (
-                  <div style={{position:'absolute',zIndex:1000,top:'100%',left:0,width:'100%'}}>
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded shadow-lg text-sm font-semibold mt-2">
-                      {errorMsg}
-                    </div>
-                  </div>
-                );
-              }
-              return null;
-            })()}
+            <div className="relative">
+              <input
+                type="text"
+                value={rawFunction}
+                onChange={(e) => setRawFunction(e.target.value)}
+                placeholder="e.g., e^(-x^2) or ln(x^2 + 1)"
+                className="w-full p-3 border border-white/30 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/70 backdrop-blur-sm transition-all duration-200 hover:bg-white/90 hover:shadow-lg"
+              />
+              <button
+                onClick={processFunction}
+                className="absolute right-2 top-2 px-3 py-1 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-colors text-sm font-medium"
+              >
+                Calculate
+              </button>
+            </div>
+            {functionError && (
+              <div className="mt-2 text-red-600 text-sm bg-red-50 p-2 rounded-lg">
+                {functionError}
+              </div>
+            )}
+            {processedFunction && !functionError && (
+              <div className="mt-2 text-green-600 text-sm bg-green-50 p-2 rounded-lg">
+                Function validated: {processedFunction}
+              </div>
+            )}
           </div>
 
           {/* Integration Limits */}
@@ -986,7 +979,7 @@ ${exactValue ? `Exact: ${exactValue.toFixed(6)}` : ''}`;
                   visualizationMode === 'function' 
                     ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg' 
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                }`
               >
                 Function Plot
               </button> */}
@@ -1426,6 +1419,89 @@ ${exactValue ? `Exact: ${exactValue.toFixed(6)}` : ''}`;
       </div>
     </div>
   );
+
+  // Replace the existing custom function input section with this:
+  const processFunction = () => {
+    try {
+      if (!rawFunction) {
+        setProcessedFunction(null);
+        setFunctionError('');
+        setCustomFunction('');
+        return;
+      }
+
+      // First, standardize the input
+      let processed = rawFunction
+        .toLowerCase()
+        // Constants
+        .replace(/\be\b/g, 'Math.E')
+        .replace(/\bpi\b/g, 'Math.PI')
+        // Exponentials
+        .replace(/e\s*\^/g, 'Math.exp')
+        .replace(/\^/g, '**')
+        // Logarithms
+        .replace(/ln\(/g, 'Math.log(')
+        .replace(/log\(/g, 'Math.log10(')
+        // Trigonometric functions
+        .replace(/sin\(/g, 'Math.sin(')
+        .replace(/cos\(/g, 'Math.cos(')
+        .replace(/tan\(/g, 'Math.tan(')
+        .replace(/csc\(/g, '1/Math.sin(')
+        .replace(/sec\(/g, '1/Math.cos(')
+        .replace(/cot\(/g, '1/Math.tan(')
+        // Inverse trigonometric functions
+        .replace(/asin\(/g, 'Math.asin(')
+        .replace(/arcsin\(/g, 'Math.asin(')
+        .replace(/acos\(/g, 'Math.acos(')
+        .replace(/arccos\(/g, 'Math.acos(')
+        .replace(/atan\(/g, 'Math.atan(')
+        .replace(/arctan\(/g, 'Math.atan(')
+        // Hyperbolic functions
+        .replace(/sinh\(/g, 'Math.sinh(')
+        .replace(/cosh\(/g, 'Math.cosh(')
+        .replace(/tanh\(/g, 'Math.tanh(')
+        // Square root and absolute value
+        .replace(/sqrt\(/g, 'Math.sqrt(')
+        .replace(/abs\(/g, 'Math.abs(')
+        // Add multiplication operator between number and variable
+        .replace(/(\d)([x])/g, '$1*$2')
+        .replace(/([x])(\d)/g, '$1*$2');
+
+      // Test the processed function
+      const testFunc = new Function('x', `
+        try {
+          return ${processed};
+        } catch (error) {
+          throw new Error('Invalid function evaluation');
+        }
+      `);
+
+      // Test with a range of values
+      const testPoints = [-10, -1, -0.1, 0, 0.1, 1, 10];
+      for (let x of testPoints) {
+        const testVal = testFunc(x);
+        if (typeof testVal !== 'number' || (!isFinite(testVal) && !Number.isNaN(testVal))) {
+          throw new Error(`Function evaluation error at x = ${x}`);
+        }
+      }
+
+      // Additional validation for inverse trig functions
+      if (processed.includes('Math.asin') || processed.includes('Math.acos')) {
+        const testVal = testFunc(2);
+        if (!Number.isNaN(testVal)) {
+          throw new Error('Invalid domain for inverse trigonometric function');
+        }
+      }
+
+      setProcessedFunction(processed);
+      setFunctionError('');
+      setCustomFunction(processed);
+    } catch (e) {
+      setFunctionError(e.message || 'Invalid function syntax');
+      setProcessedFunction(null);
+      setCustomFunction('');
+    }
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden p-4">
