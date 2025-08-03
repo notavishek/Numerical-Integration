@@ -775,6 +775,36 @@ ${exactValue ? `Exact: ${exactValue.toFixed(6)}` : ''}`;
               placeholder="e.g., x*x + 2*x + 1"
               className="w-full p-3 border border-white/30 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/70 backdrop-blur-sm transition-all duration-200 hover:bg-white/90 hover:shadow-lg"
             />
+            {/* Custom function validation with popup */}
+            {customFunction && (() => {
+              let isValid = true;
+              let errorMsg = '';
+              try {
+                // Only allow x, numbers, math operators, Math. functions
+                // Disallow any other variable or keyword
+                const allowedPattern = /^[x0-9\s\+\-\*\/\^\.\(\)]+$|Math\.[a-zA-Z]+/;
+                if (!allowedPattern.test(customFunction)) {
+                  throw new Error('Only x, numbers, operators, and Math.* functions are allowed.');
+                }
+                // eslint-disable-next-line no-new-func
+                const testFunc = new Function('x', `return ${customFunction}`);
+                const testVal = testFunc(1);
+                if (!isFinite(testVal)) throw new Error('Result is not finite');
+              } catch (e) {
+                isValid = false;
+                errorMsg = e.message || 'Invalid function syntax.';
+              }
+              if (!isValid) {
+                return (
+                  <div style={{position:'absolute',zIndex:1000,top:'100%',left:0,width:'100%'}}>
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded shadow-lg text-sm font-semibold mt-2">
+                      {errorMsg}
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
 
           {/* Integration Limits */}
