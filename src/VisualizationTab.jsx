@@ -1,5 +1,8 @@
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar } from 'recharts';
 import { integrationMethods } from './IntegrationMethods';
+import { Download } from 'lucide-react';
+import { downloadChartAsPNG } from './Utils';
+
 
 const VisualizationTab = ({ plotData, results, lowerLimit, upperLimit, selectedMethods }) => {
   return (
@@ -8,6 +11,48 @@ const VisualizationTab = ({ plotData, results, lowerLimit, upperLimit, selectedM
       <div className="bg-white/90 backdrop-blur-md rounded-xl shadow-xl border border-white/30 p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-semibold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Function Visualization</h3>
+          <div className="flex items-center gap-4">
+            <div className="flex gap-2">
+              {/* <button
+                onClick={() => setVisualizationMode('function')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  visualizationMode === 'function' 
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`
+              >
+                Function Plot
+              </button> */}
+              {/* <button
+                onClick={() => setVisualizationMode('method')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  visualizationMode === 'method' 
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Method Approximation
+              </button> */}
+            </div>
+            <div className="flex gap-1">
+              <button
+                onClick={() => downloadChartAsPNG('main-visualization')}
+                className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors flex items-center gap-1"
+                title="Download Chart as PNG"
+              >
+                <Download className="w-3 h-3" />
+                <span className="text-xs">PNG</span>
+              </button>
+              {/* <button
+                onClick={() => downloadChartAsJPG('main-visualization', `${visualizationMode}-plot`)}
+                className="p-2 bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 transition-colors flex items-center gap-1"
+                title="Download Chart as JPG"
+              >
+                <Download className="w-3 h-3" />
+                <span className="text-xs">JPG</span>
+              </button> */}
+            </div>
+          </div>
         </div>
 
         <div id="main-visualization">
