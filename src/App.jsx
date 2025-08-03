@@ -1421,6 +1421,7 @@ ${exactValue ? `Exact: ${exactValue.toFixed(6)}` : ''}`;
   );
 
   // Replace the existing custom function input section with this:
+  // Replace the existing custom function input section with this:
   const processFunction = () => {
     try {
       if (!rawFunction) {
@@ -1433,64 +1434,80 @@ ${exactValue ? `Exact: ${exactValue.toFixed(6)}` : ''}`;
       // First, standardize the input
       let processed = rawFunction
         .toLowerCase()
+        // Remove all spaces first
+        .replace(/\s+/g, '')
         // Constants
         .replace(/\be\b/g, 'Math.E')
         .replace(/\bpi\b/g, 'Math.PI')
-        // Exponentials
+        // Handle exponentials first (before logarithms to avoid conflicts)
         .replace(/e\s*\^/g, 'Math.exp')
-        .replace(/\^/g, '**')
-        // Logarithms
-        .replace(/ln\(/g, 'Math.log(')
-        .replace(/log\(/g, 'Math.log10(')
+        .replace(/\^/g, '**');
+      
+      // Handle logarithms with a more careful approach
+      // First replace 'ln' with a temporary placeholder to avoid conflicts
+      processed = processed.replace(/\bln\b/g, 'NATURAL_LOG');
+      // Then replace 'log' with base-10 log
+      processed = processed.replace(/\blog\b/g, 'Math.log10');
+      // Finally replace the placeholder with natural log
+      processed = processed.replace(/NATURAL_LOG/g, 'Math.log');
+      
+      // Continue with other functions
+      processed = processed
         // Trigonometric functions
-        .replace(/sin\(/g, 'Math.sin(')
-        .replace(/cos\(/g, 'Math.cos(')
-        .replace(/tan\(/g, 'Math.tan(')
-        .replace(/csc\(/g, '1/Math.sin(')
-        .replace(/sec\(/g, '1/Math.cos(')
-        .replace(/cot\(/g, '1/Math.tan(')
+        .replace(/\bsin\b/g, 'Math.sin')
+        .replace(/\bcos\b/g, 'Math.cos')
+        .replace(/\btan\b/g, 'Math.tan')
+        .replace(/\bcsc\b/g, '(1/Math.sin)')
+        .replace(/\bsec\b/g, '(1/Math.cos)')
+        .replace(/\bcot\b/g, '(1/Math.tan)')
         // Inverse trigonometric functions
-        .replace(/asin\(/g, 'Math.asin(')
-        .replace(/arcsin\(/g, 'Math.asin(')
-        .replace(/acos\(/g, 'Math.acos(')
-        .replace(/arccos\(/g, 'Math.acos(')
-        .replace(/atan\(/g, 'Math.atan(')
-        .replace(/arctan\(/g, 'Math.atan(')
+        .replace(/\basin\b/g, 'Math.asin')
+        .replace(/\barcsin\b/g, 'Math.asin')
+        .replace(/\bacos\b/g, 'Math.acos')
+        .replace(/\barccos\b/g, 'Math.acos')
+        .replace(/\batan\b/g, 'Math.atan')
+        .replace(/\barctan\b/g, 'Math.atan')
         // Hyperbolic functions
-        .replace(/sinh\(/g, 'Math.sinh(')
-        .replace(/cosh\(/g, 'Math.cosh(')
-        .replace(/tanh\(/g, 'Math.tanh(')
+        .replace(/\bsinh\b/g, 'Math.sinh')
+        .replace(/\bcosh\b/g, 'Math.cosh')
+        .replace(/\btanh\b/g, 'Math.tanh')
         // Square root and absolute value
-        .replace(/sqrt\(/g, 'Math.sqrt(')
-        .replace(/abs\(/g, 'Math.abs(')
+        .replace(/\bsqrt\b/g, 'Math.sqrt')
+        .replace(/\babs\b/g, 'Math.abs')
         // Add multiplication operator between number and variable
         .replace(/(\d)([x])/g, '$1*$2')
-        .replace(/([x])(\d)/g, '$1*$2');
+        .replace(/([x])(\d)/g, '$1*$2')
+        // Handle multiplication between closing parenthesis and variable/opening parenthesis
+        .replace(/\)([x])/g, ')*$1')
+        .replace(/\)(\()/g, ')*$1')
+        .replace(/([x])\(/g, '$1*(');
 
       // Test the processed function
       const testFunc = new Function('x', `
         try {
           return ${processed};
         } catch (error) {
-          throw new Error('Invalid function evaluation');
+          throw new Error('Invalid function evaluation: ' + error.message);
         }
       `);
 
-      // Test with a range of values
-      const testPoints = [-10, -1, -0.1, 0, 0.1, 1, 10];
+      // Test with a range of values, being more careful with domain issues
+      const testPoints = [0.1, 1, 2, 3, 5];  // Use safer test points
+      let hasValidPoints = false;
+      
       for (let x of testPoints) {
-        const testVal = testFunc(x);
-        if (typeof testVal !== 'number' || (!isFinite(testVal) && !Number.isNaN(testVal))) {
-          throw new Error(`Function evaluation error at x = ${x}`);
+        try {
+          const testVal = testFunc(x);
+          if (typeof testVal === 'number' && isFinite(testVal) && !isNaN(testVal)) {
+            hasValidPoints = true;
+          }
+        } catch (e) {
+          // Continue testing other points
         }
       }
-
-      // Additional validation for inverse trig functions
-      if (processed.includes('Math.asin') || processed.includes('Math.acos')) {
-        const testVal = testFunc(2);
-        if (!Number.isNaN(testVal)) {
-          throw new Error('Invalid domain for inverse trigonometric function');
-        }
+      
+      if (!hasValidPoints) {
+        throw new Error(`Function does not produce valid numeric results. Processed: ${processed}`);
       }
 
       setProcessedFunction(processed);
