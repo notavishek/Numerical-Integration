@@ -222,6 +222,44 @@ The project maintains high test coverage for:
 - ✅ Export functionality
 - ✅ User interface components
 
+
+## 🤝 Contributions
+
+We welcome contributions! Here's how you can help:
+
+### 🐛 Bug Reports
+- Use the [issue tracker](https://github.com/yourusername/numerical-integration-calculator/issues)
+- Provide detailed reproduction steps
+- Include browser and system information
+
+### 💡 Feature Requests
+- Check existing [issues](https://github.com/yourusername/numerical-integration-calculator/issues) first
+- Describe the feature and its benefits
+- Consider implementation complexity
+
+### 🔧 Development
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### 📝 Code Style
+- Follow **ESLint** configuration
+- Use **Prettier** for formatting
+- Write **JSDoc** comments for functions
+- Include **tests** for new features
+
+---
+
+### 👥 Contributors
+
+- **Minhazul Islam Rahat**
+- **Avishek Das**
+- **Niloy Barua**
+- **Uday Barua**
+
+
 ## 🤝 Contributing
 
 We welcome contributions! Here's how you can help:
