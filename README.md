@@ -260,10 +260,6 @@ We welcome contributions! Here's how you can help:
 - **Uday Barua**
 
 
-## 🤝 Contributing
-
-We welcome contributions! Here's how you can help:
-
 ### 🐛 Bug Reports
 - Use the [issue tracker](https://github.com/yourusername/numerical-integration-calculator/issues)
 - Provide detailed reproduction steps
