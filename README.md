@@ -258,7 +258,7 @@ We welcome contributions! Here's how you can help:
 - **Avishek Das**
 - **Niloy Barua**
 - **Uday Barua**
-
+Contributed by Niloyb34
 
 ### 🐛 Bug Reports
 - Use the [issue tracker](https://github.com/yourusername/numerical-integration-calculator/issues)
