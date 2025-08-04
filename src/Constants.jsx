@@ -30,6 +30,59 @@ export const predefinedFunctions = {
     exact: (a, b) => (Math.pow(b, 4) - Math.pow(a, 4)) / 4,
     description: 'Cubic function - tests higher-order accuracy'
   }
+  ,
+  'x^4 - 2x^2 + 3': {
+    func: (x) => Math.pow(x,4) - 2*Math.pow(x,2) + 3,
+    display: 'x⁴ - 2x² + 3',
+    exact: (a, b) => (Math.pow(b,5)-Math.pow(a,5))/5 - 2*(Math.pow(b,3)-Math.pow(a,3))/3 + 3*(b-a),
+    description: 'Quartic polynomial - common in beam bending and statics'
+  },
+  'e^(-x^2)': {
+    func: (x) => Math.exp(-x*x),
+    display: 'e^{-x²}',
+    exact: null, // No elementary antiderivative
+    description: 'Gaussian bell curve - probability, signal processing'
+  },
+  'x*sin(x)': {
+    func: (x) => x*Math.sin(x),
+    display: 'x·sin(x)',
+    exact: (a, b) => -b*Math.cos(b) + Math.sin(b) + a*Math.cos(a) - Math.sin(a),
+    description: 'Product of linear and sine - vibration, AC circuits'
+  },
+  'x^2*e^x': {
+    func: (x) => x*x*Math.exp(x),
+    display: 'x²·eˣ',
+    exact: (a, b) => {
+      // ∫x²eˣ dx = eˣ(x² - 2x + 2) + C
+      const F = x => Math.exp(x)*(x*x - 2*x + 2);
+      return F(b) - F(a);
+    },
+    description: 'Quadratic times exponential - heat transfer, population models'
+  },
+  '1/(1+x^2)': {
+    func: (x) => 1/(1+x*x),
+    display: '1/(1+x²)',
+    exact: (a, b) => Math.atan(b) - Math.atan(a),
+    description: 'Lorentzian - resonance, probability'
+  },
+  'sqrt(1-x^2)': {
+    func: (x) => Math.sqrt(1-x*x),
+    display: '√(1-x²)',
+    exact: (a, b) => 0.5*(b*Math.sqrt(1-b*b)+Math.asin(b)) - 0.5*(a*Math.sqrt(1-a*a)+Math.asin(a)),
+    description: 'Semicircle - geometry, statics'
+  },
+  'ln(x)': {
+    func: (x) => Math.log(x),
+    display: 'ln(x)',
+    exact: (a, b) => b*Math.log(b) - b - (a*Math.log(a) - a),
+    description: 'Natural logarithm - thermodynamics, entropy'
+  },
+  'exp(-x)': {
+    func: (x) => Math.exp(-x),
+    display: 'e^{-x}',
+    exact: (a, b) => -Math.exp(-b) + Math.exp(-a),
+    description: 'Exponential decay - RC circuits, radioactive decay'
+  }
 };
 
 // Tutorial content

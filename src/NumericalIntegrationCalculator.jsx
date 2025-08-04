@@ -7,7 +7,7 @@ import VisualizationTab from './VisualizationTab';
 import AnalysisTab from './AnalysisTab';
 import TutorialTab from './TutorialTab';
 import { integrationMethods } from './IntegrationMethods';
-import { processCustomFunction } from './Utils';
+import { downloadResultsAsTXT, exportResultsAsJSON, processCustomFunction, shareResults } from './Utils';
 
 const TabButton = ({ id, icon: Icon, label, active, onClick }) => (
   <button

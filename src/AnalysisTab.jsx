@@ -4,8 +4,68 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { Calculator, Settings, TrendingUp, Info, Download, Plus, BookOpen, Eye, Share2, HelpCircle, BarChart3, FileText } from 'lucide-react';
 import { integrationMethods } from "./IntegrationMethods";
 
+
+
+
+
 const AnalysisTab = ({ convergenceData, results, selectedMethods, exactValue, intervals }) => {
   console.log('Convergence Data:', convergenceData);
+
+  const downloadResultsAsTXT = (filename) => {
+    let content = `Numerical Integration Results\n`;
+    content += `Generated: ${new Date().toLocaleString()}\n`;
+    content += `Selected Methods: ${selectedMethods && selectedMethods.length > 0 ? selectedMethods.join(', ') : 'None'}\n`;
+    content += `Number of Intervals: ${intervals}\n`;
+    content += `\nRESULTS:\n`;
+    content += `${'Method'.padEnd(20)} ${'Value'.padEnd(15)} ${'Abs Error'.padEnd(15)} ${'Rel Error (%)'.padEnd(15)} ${'Error Estimate'.padEnd(15)}\n`;
+    content += `${'-'.repeat(80)}\n`;
+    results.forEach(result => {
+      content += `${result.method.padEnd(20)} `;
+      content += `${result.value.toFixed(6).padEnd(15)} `;
+      content += `${(result.error ? result.error.toFixed(6) : 'N/A').padEnd(15)} `;
+      content += `${(result.relativeError ? result.relativeError.toFixed(4) : 'N/A').padEnd(15)} `;
+      content += `${(result.errorEstimate ? `±${result.errorEstimate.toFixed(6)}` : 'N/A').padEnd(15)}\n`;
+    });
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadConvergenceData = () => {
+    let content = `Convergence Analysis Data\n`;
+    content += `Generated: ${new Date().toLocaleString()}\n`;
+    content += `Selected Methods: ${selectedMethods && selectedMethods.length > 0 ? selectedMethods.join(', ') : 'None'}\n`;
+    content += `Number of Intervals: ${intervals}\n\n`;
+    content += `${'Intervals'.padEnd(12)} `;
+    selectedMethods.forEach(method => {
+      content += `${method.padEnd(15)} `;
+    });
+    if (exactValue) content += `${'Exact Value'.padEnd(15)}`;
+    content += `\n`;
+    content += `${'-'.repeat(12 + selectedMethods.length * 15 + (exactValue ? 15 : 0))}\n`;
+    convergenceData.forEach(point => {
+      content += `${point.intervals.toString().padEnd(12)} `;
+      selectedMethods.forEach(method => {
+        const value = point[method] ? point[method].toFixed(6) : 'N/A';
+        content += `${value.padEnd(15)} `;
+      });
+      if (exactValue) content += `${exactValue.toFixed(6).padEnd(15)}`;
+      content += `\n`;
+    });
+    downloadResultsAsTXT('convergence-analysis');
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `convergence-analysis-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       {/* Convergence Analysis */}
@@ -17,6 +77,32 @@ const AnalysisTab = ({ convergenceData, results, selectedMethods, exactValue, in
                 <BarChart className="w-5 h-5 text-white" />
               </div>
               <h3 className="text-2xl font-semibold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Convergence Analysis</h3>
+            </div>
+            <div className="flex gap-1">
+              {/* <button
+                onClick={() => downloadChartAsPNG('convergence-analysis', 'convergence-analysis')}
+                className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors flex items-center gap-1"
+                title="Download Chart as PNG"
+              >
+                <Download className="w-3 h-3" />
+                <span className="text-xs">PNG</span>
+              </button>
+              <button
+                onClick={() => downloadChartAsJPG('convergence-analysis', 'convergence-analysis')}
+                className="p-2 bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 transition-colors flex items-center gap-1"
+                title="Download Chart as JPG"
+              >
+                <Download className="w-3 h-3" />
+                <span className="text-xs">JPG</span>
+              </button> */}
+              <button
+                onClick={downloadConvergenceData}
+                className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-1"
+                title="Download Data as TXT"
+              >
+                <Download className="w-3 h-3" />
+                <span className="text-xs">TXT</span>
+              </button>
             </div>
           </div>
           

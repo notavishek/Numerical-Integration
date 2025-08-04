@@ -53,7 +53,7 @@ const ControlPanel = ({
 
       {/* Custom Function */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Custom Function (optional)</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Custom Function</label>
         <div className="relative">
           <input
             type="text"
