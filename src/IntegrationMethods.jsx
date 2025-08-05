@@ -236,7 +236,7 @@ export class MonteCarloIntegration extends IntegrationMethod {
 export const integrationMethods = [
   new TrapezoidalRule(),
   new SimpsonsRule1By3(),
-  new SimpsonsRule3By8(),
+  // new SimpsonsRule3By8(),
   // new MidpointRule(),
   new MonteCarloIntegration()
 ];
