@@ -107,16 +107,18 @@ Why use numerical methods?
 • Error: O(h²) where h = (b-a)/n
 • Formula: h/2 * [f(a) + 2∑f(xᵢ) + f(b)]
 
-SIMPSON'S RULE:
+SIMPSON'S 1/3 RULE:
 • Uses parabolic arcs instead of straight lines
 • Much more accurate than trapezoidal
 • Error: O(h⁴) - converges much faster
 • Requires even number of intervals
 
-MIDPOINT RULE:
-• Uses rectangles with height at interval midpoint
-• Often more accurate than trapezoidal for smooth functions
-• Error: O(h²) but opposite sign to trapezoidal
+SIMPSON'S 3/8 RULE:
+• Uses cubic polynomials (third-degree) for approximation
+• Best when interval count is a multiple of 3
+• Error: O(h⁴) - similar to 1/3 rule
+• Formula: (3h/8) * [f(a) + 3∑f(xᵢ) + 2∑f(xⱼ) + f(b)]
+  where ∑f(xᵢ) is over points not multiples of 3, ∑f(xⱼ) is over multiples of 3 (excluding endpoints)
 
 MONTE CARLO:
 • Uses random sampling

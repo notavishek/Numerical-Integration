@@ -68,7 +68,7 @@ export class TrapezoidalRule extends IntegrationMethod {
 // Simpson's Rule Implementation
 export class SimpsonsRule1By3 extends IntegrationMethod {
   constructor() {
-    super("Simpson's Rule", 'Uses quadratic polynomials for better accuracy', '#ef4444');
+    super("Simpson's 1/3", 'Uses quadratic polynomials for better accuracy', '#ef4444');
   }
 
   integrate(func, a, b, n) {
@@ -232,11 +232,52 @@ export class MonteCarloIntegration extends IntegrationMethod {
   }
 }
 
+// Simpson's 3/8 Rule Implementation
+export class SimpsonsRule3By8 extends IntegrationMethod {
+  constructor() {
+    super("Simpson's 3/8", 'Uses cubic polynomials, best for intervals multiple of 3', '#a21caf');
+  }
+
+  integrate(func, a, b, n) {
+    if (n < 3) throw new Error("Simpson's 3/8 rule requires at least 3 intervals.");
+    let remainder = n % 3;
+    let total = 0;
+    let h = (b - a) / n;
+
+    // Apply 3/8 rule to the largest multiple of 3
+    let mainN = n - remainder;
+    if (mainN >= 3) {
+      let sum = func(a) + func(a + mainN * h);
+      for (let i = 1; i < mainN; i++) {
+        let x = a + i * h;
+        if (i % 3 === 0) {
+          sum += 2 * func(x);
+        } else {
+          sum += 3 * func(x);
+        }
+      }
+      total += (3 * h / 8) * sum;
+    }
+
+    // For remainder intervals, use trapezoidal rule
+    if (remainder > 0) {
+      let remA = a + mainN * h;
+      let remB = b;
+      let remSum = (func(remA) + func(remB)) / 2;
+      for (let i = 1; i < remainder; i++) {
+        remSum += func(remA + i * h);
+      }
+      total += remSum * h;
+    }
+
+    return total;
+  }
+}
 // Registry for all available methods
 export const integrationMethods = [
   new TrapezoidalRule(),
   new SimpsonsRule1By3(),
-  // new SimpsonsRule3By8(),
+  new SimpsonsRule3By8(),
   // new MidpointRule(),
   new MonteCarloIntegration()
 ];
