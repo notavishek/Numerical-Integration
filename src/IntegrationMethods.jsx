@@ -66,29 +66,72 @@ export class TrapezoidalRule extends IntegrationMethod {
 }
 
 // Simpson's Rule Implementation
-export class SimpsonsRule extends IntegrationMethod {
+export class SimpsonsRule1By3 extends IntegrationMethod {
   constructor() {
-    super("Simpson's Rule", 'Uses quadratic polynomials for better accuracy', '#ef4444');
+    super("Simpson's 1/3", 'Uses quadratic polynomials for better accuracy', '#ef4444');
   }
 
   integrate(func, a, b, n) {
-    if (n % 2 !== 0) n++;
-    
+    if (n % 2 === 0) {
+      // Even number of intervals - use regular Simpson's 1/3 rule
+      return this.simpsonRule(func, a, b, n);
+    } else {
+      // Odd number of intervals - use hybrid approach
+      const h = (b - a) / n;
+      const splitPoint = b - h; // Last point before final interval
+      // Apply Simpson's rule for first n-1 intervals
+      const simpsonPart = this.simpsonRule(func, a, splitPoint, n-1);
+      // Apply trapezoidal rule for the last interval
+      const trapPart = (h/2) * (func(splitPoint) + func(b));
+      return simpsonPart + trapPart;
+    }
+  }
+
+  // Helper method for pure Simpson's 1/3 rule calculation
+  simpsonRule(func, a, b, n) {
     const h = (b - a) / n;
     let sum = func(a) + func(b);
-    
     for (let i = 1; i < n; i++) {
       const x = a + i * h;
       sum += (i % 2 === 0 ? 2 : 4) * func(x);
     }
-    
     return (sum * h) / 3;
   }
 
   getErrorEstimate(func, a, b, n) {
-    const h = (b - a) / n;
-    const fourthDerivApprox = this.estimateFourthDerivative(func, a, b);
-    return Math.abs((Math.pow(b - a, 5) * fourthDerivApprox) / (180 * Math.pow(n, 4)));
+    if (n % 2 === 0) {
+      // Regular Simpson's error for even intervals
+      const h = (b - a) / n;
+      const fourthDerivApprox = this.estimateFourthDerivative(func, a, b);
+      return Math.abs((Math.pow(b - a, 5) * fourthDerivApprox) / (180 * Math.pow(n, 4)));
+    } else {
+      // Hybrid error estimate for odd intervals
+      const h = (b - a) / n;
+      const splitPoint = b - h;
+      // Error for Simpson's part (n-1 intervals)
+      const simpsonError = this.estimateFourthDerivative(func, a, splitPoint) *
+        Math.pow(splitPoint - a, 5) / (180 * Math.pow(n-1, 4));
+      // Error for trapezoidal part (single interval)
+      const trapError = this.estimateSecondDerivative(func, splitPoint, b) *
+        Math.pow(h, 2) / 12;
+      return Math.abs(simpsonError) + Math.abs(trapError);
+    }
+  }
+
+  estimateSecondDerivative(func, a, b) {
+    const h = (b - a) / 100;
+    let maxSecondDeriv = 0;
+    for (let x = a + h; x < b - h; x += h) {
+      try {
+        const secondDeriv = Math.abs((func(x + h) - 2 * func(x) + func(x - h)) / (h * h));
+        if (isFinite(secondDeriv)) {
+          maxSecondDeriv = Math.max(maxSecondDeriv, secondDeriv);
+        }
+      } catch (e) {
+        // Skip invalid points
+      }
+    }
+    return maxSecondDeriv;
   }
 
   estimateFourthDerivative(func, a, b) {
@@ -189,10 +232,52 @@ export class MonteCarloIntegration extends IntegrationMethod {
   }
 }
 
+// Simpson's 3/8 Rule Implementation
+export class SimpsonsRule3By8 extends IntegrationMethod {
+  constructor() {
+    super("Simpson's 3/8", 'Uses cubic polynomials, best for intervals multiple of 3', '#a21caf');
+  }
+
+  integrate(func, a, b, n) {
+    if (n < 3) throw new Error("Simpson's 3/8 rule requires at least 3 intervals.");
+    let remainder = n % 3;
+    let total = 0;
+    let h = (b - a) / n;
+
+    // Apply 3/8 rule to the largest multiple of 3
+    let mainN = n - remainder;
+    if (mainN >= 3) {
+      let sum = func(a) + func(a + mainN * h);
+      for (let i = 1; i < mainN; i++) {
+        let x = a + i * h;
+        if (i % 3 === 0) {
+          sum += 2 * func(x);
+        } else {
+          sum += 3 * func(x);
+        }
+      }
+      total += (3 * h / 8) * sum;
+    }
+
+    // For remainder intervals, use trapezoidal rule
+    if (remainder > 0) {
+      let remA = a + mainN * h;
+      let remB = b;
+      let remSum = (func(remA) + func(remB)) / 2;
+      for (let i = 1; i < remainder; i++) {
+        remSum += func(remA + i * h);
+      }
+      total += remSum * h;
+    }
+
+    return total;
+  }
+}
 // Registry for all available methods
 export const integrationMethods = [
   new TrapezoidalRule(),
-  new SimpsonsRule(),
-  new MidpointRule(),
+  new SimpsonsRule1By3(),
+  new SimpsonsRule3By8(),
+  // new MidpointRule(),
   new MonteCarloIntegration()
 ];
