@@ -37,12 +37,6 @@ export const predefinedFunctions = {
     exact: (a, b) => (Math.pow(b,5)-Math.pow(a,5))/5 - 2*(Math.pow(b,3)-Math.pow(a,3))/3 + 3*(b-a),
     description: 'Quartic polynomial - common in beam bending and statics'
   },
-  'e^(-x^2)': {
-    func: (x) => Math.exp(-x*x),
-    display: 'e^{-x²}',
-    exact: null, // No elementary antiderivative
-    description: 'Gaussian bell curve - probability, signal processing'
-  },
   'x*sin(x)': {
     func: (x) => x*Math.sin(x),
     display: 'x·sin(x)',
